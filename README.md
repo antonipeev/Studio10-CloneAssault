@@ -1,1 +1,1 @@
-FPS Game for COMP397.
+FPS Platformer Game for COMP397.
