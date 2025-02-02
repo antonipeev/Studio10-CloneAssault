@@ -1,4 +1,4 @@
-FPS Platformer Game for COMP397.
+FPS Platformer Game for COMP397 Published by Group/Studio 10.
 
 Assets Used:
 
