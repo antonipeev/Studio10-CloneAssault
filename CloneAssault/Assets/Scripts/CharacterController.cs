@@ -4,7 +4,6 @@ using UnityEngine;
 [RequireComponent(typeof(CharacterController))]
 public class PlayerMovements : MonoBehaviour
 {
-    // Reference to the CharacterController component
     private CharacterController controller;
 
     // Movement speeds
@@ -27,68 +26,93 @@ public class PlayerMovements : MonoBehaviour
 
     // -- CAMERA SETTINGS --
     [Header("Camera Settings")]
-    public Transform cameraTransform;         // Drag your Main Camera here
-    public float standingCamHeight = 1.6f;    // "Eye level" when standing
-    public float crouchingCamHeight = 1.0f;   // "Eye level" when crouching
-    public float cameraTransitionSpeed = 5f;  // How quickly the camera moves up/down
+    public Transform cameraTransform;
+    public float standingCamHeight = 1.6f;
+    public float crouchingCamHeight = 1.0f;
+    public float cameraTransitionSpeed = 5f;
+
+    // -- AUDIO SETTINGS --
+    [Header("Audio Settings")]
+    public AudioSource walkingAudioSource;
+    public AudioSource jumpAudioSource;
+    public AudioClip walkingSound;
+    public AudioClip jumpingSound;
+
+    //private bool isWalking = false;
+    private float walkSoundTimer = 0f;
+    private float walkSoundDelay = 0.5f; // 0.5 seconds delay before sound starts
 
     void Start()
     {
         controller = GetComponent<CharacterController>();
+
+        if (walkingAudioSource == null)
+        {
+            walkingAudioSource = gameObject.AddComponent<AudioSource>();
+            walkingAudioSource.loop = true;
+            walkingAudioSource.playOnAwake = false;
+        }
+
+        if (jumpAudioSource == null)
+        {
+            jumpAudioSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        walkingAudioSource.clip = walkingSound;
     }
 
     void Update()
     {
-        // Check if the player is grounded
         bool isGrounded = controller.isGrounded;
         if (isGrounded && velocity.y < 0)
         {
-            // Small negative value to keep the player grounded
             velocity.y = -2f;
         }
 
-        // Get input axes
-        float x = Input.GetAxis("Horizontal");
-        float z = Input.GetAxis("Vertical");
+        // Check movement keys
+        bool isMoving = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
 
-        // Determine current speed (sprinting overrides walk speed if not sliding)
+        // Determine speed
         float currentSpeed = Input.GetKey(KeyCode.LeftShift) && !isSliding ? sprintSpeed : walkSpeed;
 
-        // Calculate movement direction relative to player orientation
-        Vector3 move = transform.right * x + transform.forward * z;
+        // Movement direction
+        Vector3 move = transform.right * (Input.GetKey(KeyCode.D) ? 1 : Input.GetKey(KeyCode.A) ? -1 : 0) +
+                       transform.forward * (Input.GetKey(KeyCode.W) ? 1 : Input.GetKey(KeyCode.S) ? -1 : 0);
         controller.Move(move * currentSpeed * Time.deltaTime);
+
+        // Walking sound logic with delay
+        if (isMoving && isGrounded)
+        {
+            walkSoundTimer += Time.deltaTime;
+            if (walkSoundTimer >= walkSoundDelay && !walkingAudioSource.isPlaying)
+            {
+                walkingAudioSource.Play();
+                //isWalking = true;
+            }
+        }
+        else
+        {
+            walkingAudioSource.Stop();
+            //isWalking = false;
+            walkSoundTimer = 0f; // Reset timer when stopping
+        }
 
         // Jumping
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
-            // Calculate jump velocity using: v = sqrt(height * -2 * gravity)
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            jumpAudioSource.PlayOneShot(jumpingSound);
         }
 
-        // Crouching: Adjust the CharacterController height
-        if (Input.GetKey(KeyCode.C))
-        {
-            controller.height = crouchHeight;
-        }
-        else
-        {
-            controller.height = normalHeight;
-        }
+        // Crouching
+        controller.height = Input.GetKey(KeyCode.C) ? crouchHeight : normalHeight;
 
-        // Smoothly move the camera up/down between standingCamHeight and crouchingCamHeight
+        // Camera transition
         float targetCamHeight = Input.GetKey(KeyCode.C) ? crouchingCamHeight : standingCamHeight;
-        float newCamY = Mathf.Lerp(
-            cameraTransform.localPosition.y,
-            targetCamHeight,
-            Time.deltaTime * cameraTransitionSpeed
-        );
-        cameraTransform.localPosition = new Vector3(
-            cameraTransform.localPosition.x,
-            newCamY,
-            cameraTransform.localPosition.z
-        );
+        float newCamY = Mathf.Lerp(cameraTransform.localPosition.y, targetCamHeight, Time.deltaTime * cameraTransitionSpeed);
+        cameraTransform.localPosition = new Vector3(cameraTransform.localPosition.x, newCamY, cameraTransform.localPosition.z);
 
-        // Sliding: Initiate slide when Left Control is pressed and player is grounded
+        // Sliding
         if (Input.GetKeyDown(KeyCode.LeftControl) && isGrounded && !isSliding)
         {
             StartCoroutine(Slide());
@@ -99,7 +123,6 @@ public class PlayerMovements : MonoBehaviour
         controller.Move(velocity * Time.deltaTime);
     }
 
-    // Coroutine to handle sliding
     private IEnumerator Slide()
     {
         isSliding = true;
