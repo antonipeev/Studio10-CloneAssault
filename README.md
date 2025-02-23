@@ -11,9 +11,11 @@ CURRENT FEATURES
 - Game Over Menu
 - Crosshair
 - Enemy AI + Path logic
+- Music + Basic Sounds
 
 TODO:
 - Add throwables
+- Add more miscellaneous sounds
 - Add enemy + player models
 - Inventory System
 - Primary / Secondary weapons switching
