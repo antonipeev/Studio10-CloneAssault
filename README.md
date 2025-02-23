@@ -1,11 +1,31 @@
 FPS Platformer Game for COMP397 Published by Group/Studio 10.
 
+CURRENT FEATURES
+- Player Movement (Sprint, jump crouch, slide)
+- Primary / Secondary Weapons (rifle, pistol)
+- FPS Camera
+- Zooming
+- Mouse Aiming and Shooting
+- Main Menu
+- Pause Menu
+- Game Over Menu
+- Crosshair
+- Enemy AI + Path logic
+
 TODO:
 - Add throwables
-- Add enemy logic (Done)
 - Add enemy + player models
-- Add main menu screen (Done)
-- Add button functionality (Done)
+- Inventory System
+- Visual Damage Feedback
+- Integrate all weapon classes
+- Recoil
+- Save / Load System
+- UI
+- Objective Tracker
+- Ammo and Health pickups + drops
+- Level Design + Add envrionmental hazards
+- Add multiple enemy classes
+
 
 Assets Used:
 
