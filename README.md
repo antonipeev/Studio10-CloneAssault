@@ -16,6 +16,7 @@ TODO:
 - Add throwables
 - Add enemy + player models
 - Inventory System
+- Primary / Secondary weapons switching
 - Visual Damage Feedback
 - Integrate all weapon classes
 - Recoil
