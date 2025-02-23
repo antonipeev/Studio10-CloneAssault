@@ -2,38 +2,25 @@ using UnityEngine;
 
 public class Bullet : MonoBehaviour
 {
-    public float speed = 50f;
     public float damage = 10f;
-    public float lifetime = 3f;
-    public GameObject impactEffect;
-    public LayerMask enemyLayer;
 
-    void Start()
+    void OnCollisionEnter(Collision collision)
     {
-        Destroy(gameObject, lifetime);
-    }
-
-    void Update()
-    {
-        transform.Translate(Vector3.forward * speed * Time.deltaTime);
-    }
-
-    void OnTriggerEnter(Collider other)
-    {
-        if (((1 << other.gameObject.layer) & enemyLayer) != 0)
+        // Check if the bullet hit an object tagged "Player"
+        if (collision.gameObject.CompareTag("Player"))
         {
-            EnemyHealth enemy = other.GetComponent<EnemyHealth>();
-            if (enemy != null)
+            // Try to get the PlayerHealth component from the hit object or its parent
+            PlayerHealth playerHealth = collision.gameObject.GetComponent<PlayerHealth>();
+            if (playerHealth == null && collision.transform.parent != null)
             {
-                enemy.TakeDamage(damage);
+                playerHealth = collision.transform.parent.GetComponent<PlayerHealth>();
+            }
+
+            if (playerHealth != null)
+            {
+                playerHealth.TakeDamage(damage);
             }
         }
-
-        if (impactEffect != null)
-        {
-            Instantiate(impactEffect, transform.position, Quaternion.identity);
-        }
-
-        Destroy(gameObject);
+        Destroy(gameObject); // Destroy the bullet after impact
     }
 }

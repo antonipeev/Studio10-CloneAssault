@@ -1,94 +1,54 @@
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class PauseMenu : MonoBehaviour
 {
-    [Header("UI References")]
-    public GameObject pauseMenuUI;    // The Pause Menu UI Panel
-    public Button resumeButton;       // Resume button
-    public Button exitButton;         // Exit button
-
-    [Header("Player & Gun Scripts")]
-    public MonoBehaviour playerMovementScript; // Player movement script (e.g., PlayerMovements)
-    public MonoBehaviour[] gunScripts; // Array to store all gun-related scripts
-
-    private bool isPaused = false;
-
-    void Start()
-    {
-        // Hide the pause menu at the start
-        pauseMenuUI.SetActive(false);
-
-        // Add button listeners
-        if (resumeButton != null)  resumeButton.onClick.AddListener(ResumeGame);
-        if (exitButton   != null)  exitButton.onClick.AddListener(ExitGame);
-    }
+    public static bool IsPaused { get; private set; }
+    public GameObject pauseMenuUI;
+    public GameObject crosshairCanvas; // Reference to your crosshair canvas
 
     void Update()
     {
-        // Press Escape to toggle pause
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (isPaused)
+            if (IsPaused)
                 ResumeGame();
             else
                 PauseGame();
         }
     }
 
+    public void PauseGame()
+    {
+        pauseMenuUI.SetActive(true);
+        if (crosshairCanvas != null)
+            crosshairCanvas.SetActive(false); // Disable crosshair
+        Time.timeScale = 0f;
+        IsPaused = true;
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+    }
+
     public void ResumeGame()
     {
-        // Hide pause menu
         pauseMenuUI.SetActive(false);
-
-        // Resume time
+        if (crosshairCanvas != null)
+            crosshairCanvas.SetActive(true); // Re-enable crosshair
         Time.timeScale = 1f;
-        isPaused = false;
-
-        // Lock & hide cursor again
-        Cursor.lockState = CursorLockMode.Locked;
+        IsPaused = false;
         Cursor.visible = false;
-
-        // Re-enable player movement script
-        if (playerMovementScript != null)
-            playerMovementScript.enabled = true;
-
-        // Re-enable all gun scripts
-        foreach (var gunScript in gunScripts)
-        {
-            if (gunScript != null)
-                gunScript.enabled = true;
-        }
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
-    void PauseGame()
+    public void LoadGame()
     {
-        // Show pause menu
-        pauseMenuUI.SetActive(true);
-
-        // Freeze the entire game
-        Time.timeScale = 0f;
-        isPaused = true;
-
-        // Unlock & show cursor for UI interaction
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-
-        // Disable player movement script
-        if (playerMovementScript != null)
-            playerMovementScript.enabled = false;
-
-        // Disable all gun scripts
-        foreach (var gunScript in gunScripts)
-        {
-            if (gunScript != null)
-                gunScript.enabled = false;
-        }
+        // This is a stub for load functionality.
+        Debug.Log("Load Game pressed.");
     }
 
-    public void ExitGame()
+    public void MainMenu()
     {
-        Debug.Log("Exiting Game...");
-        Application.Quit();
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("MainMenu");
     }
 }

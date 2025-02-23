@@ -2,19 +2,24 @@ using UnityEngine;
 
 public class EnemyHealth : MonoBehaviour
 {
+    [Header("Health Settings")]
     public float maxHealth = 100f;
+
+    [SerializeField] // Shows in the Inspector but is not editable
     private float currentHealth;
-    public GameObject deathEffect;
 
     void Start()
     {
         currentHealth = maxHealth;
     }
 
-    public void TakeDamage(float damage)
+    public void TakeDamage(float amount)
     {
-        currentHealth -= damage;
-        if (currentHealth <= 0)
+        currentHealth -= amount;
+
+        Debug.Log(gameObject.name + " took " + amount + " damage. Remaining HP: " + currentHealth);
+
+        if (currentHealth <= 0f)
         {
             Die();
         }
@@ -22,11 +27,7 @@ public class EnemyHealth : MonoBehaviour
 
     void Die()
     {
-        if (deathEffect != null)
-        {
-            Instantiate(deathEffect, transform.position, Quaternion.identity);
-        }
-
-        Destroy(gameObject);
+        Debug.Log(gameObject.name + " has died!");
+        Destroy(gameObject); // Destroys the entire enemy
     }
 }

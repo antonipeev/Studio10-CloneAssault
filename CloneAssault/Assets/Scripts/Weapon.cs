@@ -7,9 +7,9 @@ public class Weapon : MonoBehaviour
     public float damage = 20f;
     public float range = 100f;
     public float fireRate = 0.1f;
-    public int maxAmmo = 20;  // Magazine capacity
+    public int maxAmmo = 20;
     public int currentAmmo;
-    public float reloadTime = 2f; // Reload duration
+    public float reloadTime = 2f;
     public LayerMask enemyLayer;
     private float nextTimeToFire = 0f;
     private bool isReloading = false;
@@ -23,7 +23,7 @@ public class Weapon : MonoBehaviour
     [Header("Audio Settings")]
     public AudioSource gunAudioSource;
     public AudioClip gunshotSound;
-    public AudioClip reloadSound; // Added reload sound
+    public AudioClip reloadSound;
 
     [Header("Shell Ejection")]
     public GameObject shellPrefab;
@@ -42,7 +42,7 @@ public class Weapon : MonoBehaviour
     void Start()
     {
         defaultFOV = playerCamera.fieldOfView;
-        currentAmmo = maxAmmo; // Initialize ammo
+        currentAmmo = maxAmmo;
         if (muzzleFlash != null)
         {
             muzzleFlash.gameObject.SetActive(false);
@@ -51,6 +51,11 @@ public class Weapon : MonoBehaviour
 
     void Update()
     {
+        // If the game is paused, skip processing any input.
+        // This prevents the weapon from firing when the pause menu is active.
+        if (PauseMenu.IsPaused)
+            return;
+        
         if (isReloading) return;
 
         if (Input.GetButton("Fire1") && Time.time >= nextTimeToFire)
@@ -62,7 +67,7 @@ public class Weapon : MonoBehaviour
             }
             else
             {
-                StartCoroutine(Reload()); // Auto-reload if out of ammo
+                StartCoroutine(Reload());
             }
         }
 
@@ -71,7 +76,6 @@ public class Weapon : MonoBehaviour
             StartCoroutine(Reload());
         }
 
-        // Aim Down Sights (ADS)
         if (Input.GetButtonDown("Fire2"))
         {
             isAiming = !isAiming;
@@ -81,7 +85,7 @@ public class Weapon : MonoBehaviour
 
     void Shoot()
     {
-        currentAmmo--; // Reduce ammo count
+        currentAmmo--;
 
         // Muzzle Flash
         if (muzzleFlash != null)
@@ -117,7 +121,7 @@ public class Weapon : MonoBehaviour
             Rigidbody tracerRB = tracer.GetComponent<Rigidbody>();
             if (tracerRB != null)
             {
-                tracerRB.linearVelocity = tracerSpawnPoint.forward * 100f; // Fix: Changed from linearVelocity
+                tracerRB.linearVelocity = tracerSpawnPoint.forward * 100f;
             }
             Destroy(tracer, 0.5f);
         }
@@ -126,7 +130,17 @@ public class Weapon : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, range, enemyLayer))
         {
-            EnemyHealth enemy = hit.transform.GetComponent<EnemyHealth>();
+            Debug.Log("Hit: " + hit.collider.gameObject.name);
+
+            // Try to get EnemyHealth from the hit object
+            EnemyHealth enemy = hit.collider.GetComponent<EnemyHealth>();
+
+            // If EnemyHealth is not found on the hit object, check its parent
+            if (enemy == null)
+            {
+                enemy = hit.collider.GetComponentInParent<EnemyHealth>();
+            }
+
             if (enemy != null)
             {
                 enemy.TakeDamage(damage);
@@ -145,7 +159,6 @@ public class Weapon : MonoBehaviour
     {
         isReloading = true;
 
-        // Play reload sound
         if (gunAudioSource != null && reloadSound != null)
         {
             gunAudioSource.PlayOneShot(reloadSound);
@@ -153,7 +166,7 @@ public class Weapon : MonoBehaviour
 
         yield return new WaitForSeconds(reloadTime);
 
-        currentAmmo = maxAmmo; // Refill ammo
+        currentAmmo = maxAmmo;
         isReloading = false;
     }
 
