@@ -59,3 +59,6 @@ https://assetstore.unity.com/packages/3d/environments/industrial/barrels-63623
 
 Weapon Soldier Sounds Pack Fps
 https://assetstore.unity.com/packages/audio/sound-fx/weapons/weapon-soldier-sounds-pack-fps-29662
+
+Low Poly Weapons Vol 1
+https://assetstore.unity.com/packages/3d/props/guns/low-poly-weapons-vol-1-151980
