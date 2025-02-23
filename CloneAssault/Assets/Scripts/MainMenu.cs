@@ -6,7 +6,7 @@ public class MainMenu : MonoBehaviour
     // Called when the Start Game button is clicked
     public void StartGame()
     {
-        SceneManager.LoadScene("GameScene"); // Replace "GameScene" with your actual gameplay scene name
+        SceneManager.LoadScene("SampleScene"); // Replace "SampleScene" with your actual gameplay scene name
     }
 
     // Called when the Exit button is clicked

@@ -9,8 +9,8 @@ public class RifleEnemyAI : MonoBehaviour
 
     [Header("References")]
     public Transform player;           // Player's transform
-    public Transform firePoint;        // Firing point (e.g., the M4_8 transform)
-    public GameObject bulletPrefab;    // Prefab for the bullet/projectile
+    public Transform firePoint;        // Firing point
+    // public GameObject bulletPrefab; // (No longer needed for hitscan)
     public Transform[] patrolPoints;   // Array of patrol waypoints
 
     [Header("AI Settings")]
@@ -26,6 +26,12 @@ public class RifleEnemyAI : MonoBehaviour
     public AudioClip reloadSound;      // Sound played during reload
     public AudioSource enemyAudioSource;
     public ParticleSystem muzzleFlash; // Muzzle flash effect
+
+    [Tooltip("Damage dealt per hit.")]
+    public float damagePerShot = 10f;
+
+    [Tooltip("Maximum distance of hitscan ray.")]
+    public float maxRayDistance = 100f;
 
     private NavMeshAgent agent;
     private int currentPatrolIndex = 0;
@@ -89,9 +95,10 @@ public class RifleEnemyAI : MonoBehaviour
     {
         Vector3 direction = (player.position - transform.position).normalized;
         RaycastHit hit;
+        // Cast from a bit above the enemy so the ray isn't blocked by ground
         if (Physics.Raycast(transform.position + Vector3.up, direction, out hit, sightRange))
         {
-            return hit.transform == player;
+            return (hit.transform == player);
         }
         return false;
     }
@@ -116,6 +123,7 @@ public class RifleEnemyAI : MonoBehaviour
         if (lookDirection != Vector3.zero)
             transform.rotation = Quaternion.LookRotation(lookDirection);
 
+        // Fire logic
         if (!isReloading)
         {
             if (currentAmmo > 0)
@@ -139,7 +147,7 @@ public class RifleEnemyAI : MonoBehaviour
         }
     }
 
-    // Shooting method: play effects, sound, and instantiate a bullet
+    // Hitscan shooting: play effects, raycast from firePoint forward
     void Shoot()
     {
         currentAmmo--;
@@ -158,10 +166,19 @@ public class RifleEnemyAI : MonoBehaviour
             enemyAudioSource.PlayOneShot(fireSound);
         }
 
-        // Instantiate the bullet projectile
-        if (bulletPrefab != null && firePoint != null)
+        // Perform a raycast from the firePoint
+        Debug.DrawRay(firePoint.position, firePoint.forward * maxRayDistance, Color.red, 1f);
+        Ray ray = new Ray(firePoint.position, firePoint.forward);
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit, maxRayDistance))
         {
-            Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
+            // Check if we hit the player
+            // (or anything else that has a PlayerHealth script)
+            PlayerHealth playerHealth = hit.transform.GetComponentInParent<PlayerHealth>();
+            if (playerHealth != null)
+            {
+                playerHealth.TakeDamage(damagePerShot);
+            }
         }
     }
 
@@ -193,7 +210,7 @@ public class RifleEnemyAI : MonoBehaviour
         // Implement cover logic as needed.
     }
 
-    // Called when the enemy is hit
+    // Called when the enemy is hit (for your own use if needed)
     public void OnHit()
     {
         currentState = State.Cover;

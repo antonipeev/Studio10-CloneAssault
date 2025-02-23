@@ -5,21 +5,24 @@ public class PlayerHealth : MonoBehaviour
 {
     [Header("Health Settings")]
     public float maxHealth = 100f;
+    
+    [SerializeField] // Allows you to view current health in the Inspector
     private float currentHealth;
 
     [Header("Game Over Settings")]
-    public GameObject gameOverUI; // Assign your Game Over Canvas in the Inspector
+    public GameObject gameOverUI;      // Assign your Game Over Canvas in the Inspector
+    public GameObject crosshairCanvas; // Reference to your crosshair canvas
 
     void Start()
     {
         currentHealth = maxHealth;
     }
 
-    // Call this method from your bullet or damage-dealing script
     public void TakeDamage(float amount)
     {
         currentHealth -= amount;
         Debug.Log("Player took " + amount + " damage. Remaining HP: " + currentHealth);
+
         if (currentHealth <= 0)
         {
             Die();
@@ -29,11 +32,24 @@ public class PlayerHealth : MonoBehaviour
     void Die()
     {
         Debug.Log("Player has died!");
-        // Display game over UI and pause the game
+
+        // Display the Game Over UI
         if (gameOverUI != null)
         {
             gameOverUI.SetActive(true);
-            Time.timeScale = 0f; // Freeze game time
         }
+
+        // Disable the crosshair so it doesn't appear over the game over screen
+        if (crosshairCanvas != null)
+        {
+            crosshairCanvas.SetActive(false);
+        }
+
+        // Freeze the game
+        Time.timeScale = 0f;
+
+        // Unlock and show the cursor for menu navigation
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
     }
 }
