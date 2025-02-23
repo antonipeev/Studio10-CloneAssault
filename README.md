@@ -2,10 +2,10 @@ FPS Platformer Game for COMP397 Published by Group/Studio 10.
 
 TODO:
 - Add throwables
-- Add enemy logic
+- Add enemy logic (Done)
 - Add enemy + player models
-- Add main menu screen
-- Add button functionality
+- Add main menu screen (Done)
+- Add button functionality (Done)
 
 Assets Used:
 
