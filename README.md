@@ -1,11 +1,34 @@
 FPS Platformer Game for COMP397 Published by Group/Studio 10.
 
+CURRENT FEATURES
+- Player Movement (Sprint, jump crouch, slide)
+- Primary / Secondary Weapons (rifle, pistol)
+- FPS Camera
+- Zooming
+- Mouse Aiming and Shooting
+- Main Menu
+- Pause Menu
+- Game Over Menu
+- Crosshair
+- Enemy AI + Path logic
+- Music + Basic Sounds
+
 TODO:
 - Add throwables
-- Add enemy logic (Done)
+- Add more miscellaneous sounds
 - Add enemy + player models
-- Add main menu screen (Done)
-- Add button functionality (Done)
+- Inventory System
+- Primary / Secondary weapons switching
+- Visual Damage Feedback
+- Integrate all weapon classes
+- Recoil
+- Save / Load System
+- UI
+- Objective Tracker
+- Ammo and Health pickups + drops
+- Level Design + Add envrionmental hazards
+- Add multiple enemy classes
+
 
 Assets Used:
 
@@ -39,3 +62,6 @@ https://assetstore.unity.com/packages/3d/environments/industrial/barrels-63623
 
 Weapon Soldier Sounds Pack Fps
 https://assetstore.unity.com/packages/audio/sound-fx/weapons/weapon-soldier-sounds-pack-fps-29662
+
+Low Poly Weapons Vol 1
+https://assetstore.unity.com/packages/3d/props/guns/low-poly-weapons-vol-1-151980
