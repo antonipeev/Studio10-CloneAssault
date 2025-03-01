@@ -6,19 +6,20 @@ public enum WeaponType { M1911, Generic, Sniper, RPG7 }
 public class Weapons : MonoBehaviour
 {
     [Header("General Settings")]
-    // currentWeapon will be determined by weapon swapping.
     public WeaponType currentWeapon;
     public Camera playerCamera;
     public AudioSource audioSource; // Used by RPG7 for firing/reloading sounds
 
     [Header("Weapon Selection")]
-    // Set your default primary weapon here (Generic, Sniper, or RPG7).
+    // The default primary weapon (Generic, Sniper, or RPG7).
     public WeaponType primaryWeapon = WeaponType.Generic;
 
     [Header("Weapon Models")]
-    // Assign the model GameObjects for the primary and secondary weapons.
-    public GameObject primaryWeaponModel;   // e.g., Generic, Sniper, or RPG7 model
-    public GameObject secondaryWeaponModel; // M1911 model
+    // Assign the specific model GameObjects for each weapon here:
+    public GameObject m1911Model;   // Pistol
+    public GameObject genericModel; // M4 or other generic rifle
+    public GameObject sniperModel;  // M107 or other sniper
+    public GameObject rpgModel;     // RPG7
 
     // Track the last weapon to detect swaps.
     private WeaponType lastWeapon;
@@ -36,7 +37,7 @@ public class Weapons : MonoBehaviour
     private bool m1911IsReloading = false;
 
     public ParticleSystem m1911MuzzleFlash;
-    public GameObject m1911ImpactEffect; // Instantiated without a parent
+    public GameObject m1911ImpactEffect; 
 
     public AudioSource m1911GunAudioSource;
     public AudioClip m1911GunshotSound;
@@ -115,153 +116,170 @@ public class Weapons : MonoBehaviour
     public float sniperZoomSpeed = 10f;
     private bool sniperIsZoomed = false;
     private float sniperDefaultFOV;
-    public GameObject sniperModel;
     #endregion
 
     #region RPG7 Variables (Primary)
     [Header("RPG7 Settings (Primary)")]
-    public bool rpgIsLoaded = true;         // Starts loaded
+    public bool rpgIsLoaded = true; 
     public float rpgReloadTime = 3f;
     public float explosionDelay = 0.5f;
     public float explosionRadius = 5f;
     public float explosionDamage = 100f;
-    public GameObject rocketInGun;       // Rocket mesh visible when loaded
-    public Transform rpgMuzzlePoint;     // Tip of the RPG barrel
+    public GameObject rocketInGun; 
+    public Transform rpgMuzzlePoint;  
     public ParticleSystem rpgMuzzleSmoke;
     public GameObject explosionEffect;
-    public AudioClip rpgExplosionSound;  // Firing/explosion sound
+    public AudioClip rpgExplosionSound; 
     public AudioClip rpgReloadSound;
     public float rpgMaxRange = 100f;
     private bool rpgIsReloading = false;
     #endregion
 
-    public int M1911Ammo { get { return m1911CurrentAmmo; } }
-    public int GenericAmmo { get { return genericCurrentAmmo; } }
+    // Public getters for HUD usage
+    public int M1911Ammo  { get { return m1911CurrentAmmo; } }
+    public int GenericAmmo{ get { return genericCurrentAmmo; } }
     public int SniperAmmo { get { return sniperCurrentAmmo; } }
 
-
-void Start()
-{
-    // Store the default field of view for each weapon.
-    if (playerCamera != null)
+    void Start()
     {
-        m1911DefaultFOV = playerCamera.fieldOfView;
-        genericDefaultFOV = playerCamera.fieldOfView;
-        sniperDefaultFOV = playerCamera.fieldOfView;
-    }
-
-    // Initialize ammo for all weapons so they are fully loaded regardless of which one is active.
-    m1911CurrentAmmo = m1911MaxAmmo;
-    genericCurrentAmmo = genericMaxAmmo;
-    sniperCurrentAmmo = sniperMaxAmmo;
-    rpgIsLoaded = true;  // Assume RPG7 starts loaded
-
-    // Set the starting weapon to your primary weapon.
-    currentWeapon = primaryWeapon;
-    lastWeapon = currentWeapon;  // Track the initial weapon.
-
-    // Disable muzzle flashes initially.
-    if (m1911MuzzleFlash != null)
-        m1911MuzzleFlash.gameObject.SetActive(false);
-    if (genericMuzzleFlash != null)
-        genericMuzzleFlash.gameObject.SetActive(false);
-    if (sniperMuzzleFlash != null)
-        sniperMuzzleFlash.gameObject.SetActive(false);
-
-    // Ensure weapon models are shown/hidden correctly at start.
-    UpdateWeaponVisibility();
-}
-    void Update()
-    {
-        // Allow weapon swapping if not paused.
-        if (!PauseMenu.IsPaused)
+        // Store the default field of view for each weapon.
+        if (playerCamera != null)
         {
-            // Press "1" to switch to primary.
-            if (Input.GetKeyDown(KeyCode.Alpha1))
-            {
-                currentWeapon = primaryWeapon;
-            }
-            // Press "2" to switch to M1911 (secondary).
-            if (Input.GetKeyDown(KeyCode.Alpha2))
-            {
-                currentWeapon = WeaponType.M1911;
-            }
+            m1911DefaultFOV   = playerCamera.fieldOfView;
+            genericDefaultFOV = playerCamera.fieldOfView;
+            sniperDefaultFOV  = playerCamera.fieldOfView;
         }
 
-        // Check for weapon swap.
-        if (lastWeapon != currentWeapon)
-        {
-            OnWeaponSwapped();
-            lastWeapon = currentWeapon;
-        }
+        // Initialize ammo for all weapons
+        m1911CurrentAmmo   = m1911MaxAmmo;
+        genericCurrentAmmo = genericMaxAmmo;
+        sniperCurrentAmmo  = sniperMaxAmmo;
+        rpgIsLoaded        = true; // Assume RPG7 starts loaded
 
-        // If paused, stop here.
-        if (PauseMenu.IsPaused)
-            return;
+        // Set the starting weapon to your primary weapon.
+        currentWeapon = primaryWeapon;
+        lastWeapon = currentWeapon;  // Track the initial weapon.
 
-        // Update logic for the current weapon type.
-        switch (currentWeapon)
-        {
-            case WeaponType.M1911:
-                M1911Update();
-                break;
-            case WeaponType.Generic:
-                GenericUpdate();
-                break;
-            case WeaponType.Sniper:
-                SniperUpdate();
-                break;
-            case WeaponType.RPG7:
-                RPG7Update();
-                break;
-        }
+        // Disable muzzle flashes initially.
+        if (m1911MuzzleFlash != null)   m1911MuzzleFlash.gameObject.SetActive(false);
+        if (genericMuzzleFlash != null) genericMuzzleFlash.gameObject.SetActive(false);
+        if (sniperMuzzleFlash != null)  sniperMuzzleFlash.gameObject.SetActive(false);
 
-        // Update models each frame (hiding or showing weapon objects).
+        // Update the weapon model visibility at start.
         UpdateWeaponVisibility();
     }
 
-    /// <summary>
-    /// Called once each time the weapon changes from one type to another.
-    /// Ensures the M1911 muzzle flash won't briefly appear on weapon swap.
-    /// </summary>
-void OnWeaponSwapped()
+void Update()
 {
-    // When switching to M1911, ensure the muzzle flash is stopped, but do not reset ammo.
-    if (currentWeapon == WeaponType.M1911 && m1911MuzzleFlash != null)
+    // Ensure cursor is properly unlocked when paused
+    if (PauseMenu.IsPaused)
     {
-        m1911MuzzleFlash.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-        m1911MuzzleFlash.Clear();
-        m1911MuzzleFlash.gameObject.SetActive(false);
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+        return; // Stop weapon logic from running when paused
     }
+
+    // Allow weapon swapping if not paused.
+    if (!PauseMenu.IsPaused)
+    {
+        // Press "1" to switch to your primary
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            currentWeapon = primaryWeapon;
+        }
+        // Press "2" to switch to M1911 (secondary).
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            currentWeapon = WeaponType.M1911;
+        }
+    }
+
+    // Check for weapon swap
+    if (lastWeapon != currentWeapon)
+    {
+        OnWeaponSwapped();
+        lastWeapon = currentWeapon;
+    }
+
+    // Update logic for the current weapon type
+    switch (currentWeapon)
+    {
+        case WeaponType.M1911:
+            M1911Update();
+            break;
+        case WeaponType.Generic:
+            GenericUpdate();
+            break;
+        case WeaponType.Sniper:
+            SniperUpdate();
+            break;
+        case WeaponType.RPG7:
+            RPG7Update();
+            break;
+    }
+
+    // Update model visibility each frame
+    UpdateWeaponVisibility();
 }
 
+    /// <summary>
+    /// Called once each time the weapon changes from one type to another.
+    /// Ensures the M1911 muzzle flash won't appear briefly on swap.
+    /// </summary>
+    void OnWeaponSwapped()
+    {
+        if (currentWeapon == WeaponType.M1911 && m1911MuzzleFlash != null)
+        {
+            m1911MuzzleFlash.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            m1911MuzzleFlash.Clear();
+            m1911MuzzleFlash.gameObject.SetActive(false);
+        }
+    }
 
     /// <summary>
-    /// Toggles the visibility of primary/secondary weapon models.
+    /// Toggles the visibility of all weapon models, enabling only the one for currentWeapon.
     /// </summary>
     void UpdateWeaponVisibility()
     {
-        if (currentWeapon == WeaponType.M1911)
+        // Hide all first
+        if (m1911Model   != null) m1911Model.SetActive(false);
+        if (genericModel != null) genericModel.SetActive(false);
+        if (sniperModel  != null) sniperModel.SetActive(false);
+        if (rpgModel     != null) rpgModel.SetActive(false);
+
+        // Now enable only the current weapon's model
+        switch (currentWeapon)
         {
-            if (primaryWeaponModel != null)
-                primaryWeaponModel.SetActive(false);
-            if (secondaryWeaponModel != null)
-                secondaryWeaponModel.SetActive(true);
-        }
-        else
-        {
-            if (primaryWeaponModel != null)
-                primaryWeaponModel.SetActive(true);
-            if (secondaryWeaponModel != null)
-                secondaryWeaponModel.SetActive(false);
+            case WeaponType.M1911:
+                if (m1911Model != null) m1911Model.SetActive(true);
+                break;
+            case WeaponType.Generic:
+                if (genericModel != null) genericModel.SetActive(true);
+                break;
+            case WeaponType.Sniper:
+                if (sniperModel != null) sniperModel.SetActive(true);
+                break;
+            case WeaponType.RPG7:
+                if (rpgModel != null) rpgModel.SetActive(true);
+                break;
         }
     }
 
-    #region M1911 Methods
+    /// <summary>
+    /// Called by WeaponPickup (or your own code) to change the primary weapon type.
+    /// </summary>
+    public void SetPrimaryWeapon(WeaponType newPrimary)
+    {
+        primaryWeapon = newPrimary;
+        currentWeapon = newPrimary;
+        lastWeapon = newPrimary;
+        UpdateWeaponVisibility();
+    }
+
+    // ============ M1911 (Secondary) ============
     void M1911Update()
     {
-        if (m1911IsReloading)
-            return;
+        if (m1911IsReloading) return;
 
         if (Input.GetButtonDown("Fire1") && Time.time >= m1911NextTimeToFire)
         {
@@ -276,7 +294,7 @@ void OnWeaponSwapped()
             }
         }
 
-        // Toggle ADS using right mouse button
+        // Toggle ADS with right mouse button
         if (Input.GetButtonDown("Fire2"))
         {
             m1911IsAiming = !m1911IsAiming;
@@ -320,13 +338,12 @@ void OnWeaponSwapped()
             Destroy(shell, 2f);
         }
 
-        // Raycast for bullet hit
+        // Raycast
         RaycastHit hit;
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, m1911Range))
         {
-            EnemyHealth enemy = hit.transform.GetComponent<EnemyHealth>();
-            if (enemy == null)
-                enemy = hit.transform.GetComponentInParent<EnemyHealth>();
+            EnemyHealth enemy = hit.transform.GetComponent<EnemyHealth>() ??
+                                hit.transform.GetComponentInParent<EnemyHealth>();
             if (enemy != null)
             {
                 enemy.TakeDamage(m1911Damage);
@@ -343,14 +360,11 @@ void OnWeaponSwapped()
     IEnumerator ReloadM1911()
     {
         m1911IsReloading = true;
-
         if (m1911GunAudioSource != null && m1911ReloadSound != null)
         {
             m1911GunAudioSource.PlayOneShot(m1911ReloadSound);
         }
-
         yield return new WaitForSeconds(m1911ReloadTime);
-
         m1911CurrentAmmo = m1911MaxAmmo;
         m1911IsReloading = false;
     }
@@ -365,15 +379,12 @@ void OnWeaponSwapped()
             m1911MuzzleFlash.gameObject.SetActive(false);
         }
     }
-    #endregion
 
-    #region Generic Methods
+    // ============ Generic (Primary) ============
     void GenericUpdate()
     {
-        if (genericIsReloading)
-            return;
+        if (genericIsReloading) return;
 
-        // Continuous fire using GetButton for semi-auto behavior
         if (Input.GetButton("Fire1") && Time.time >= genericNextTimeToFire)
         {
             if (genericCurrentAmmo > 0)
@@ -392,7 +403,6 @@ void OnWeaponSwapped()
             StartCoroutine(ReloadGeneric());
         }
 
-        // Toggle ADS with right mouse button
         if (Input.GetButtonDown("Fire2"))
         {
             genericIsAiming = !genericIsAiming;
@@ -404,7 +414,6 @@ void OnWeaponSwapped()
     {
         genericCurrentAmmo--;
 
-        // Muzzle Flash
         if (genericMuzzleFlash != null)
         {
             genericMuzzleFlash.gameObject.SetActive(true);
@@ -412,13 +421,11 @@ void OnWeaponSwapped()
             StartCoroutine(DisableGenericMuzzleFlash());
         }
 
-        // Gunshot Sound
         if (genericGunAudioSource != null && genericGunshotSound != null)
         {
             genericGunAudioSource.PlayOneShot(genericGunshotSound);
         }
 
-        // Shell Ejection
         if (genericShellPrefab != null && genericShellEjectPoint != null)
         {
             GameObject shell = Instantiate(genericShellPrefab, genericShellEjectPoint.position, genericShellEjectPoint.rotation);
@@ -431,7 +438,6 @@ void OnWeaponSwapped()
             Destroy(shell, 2f);
         }
 
-        // Tracer Effect
         if (genericTracerPrefab != null && genericTracerSpawnPoint != null)
         {
             GameObject tracer = Instantiate(genericTracerPrefab, genericTracerSpawnPoint.position, genericTracerSpawnPoint.rotation);
@@ -443,15 +449,12 @@ void OnWeaponSwapped()
             Destroy(tracer, 0.5f);
         }
 
-        // Raycast for bullet hit
         RaycastHit hit;
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, genericRange, genericEnemyLayer))
         {
             Debug.Log("Hit: " + hit.collider.gameObject.name);
-
-            EnemyHealth enemy = hit.collider.GetComponent<EnemyHealth>();
-            if (enemy == null)
-                enemy = hit.collider.GetComponentInParent<EnemyHealth>();
+            EnemyHealth enemy = hit.collider.GetComponent<EnemyHealth>() ??
+                                hit.collider.GetComponentInParent<EnemyHealth>();
             if (enemy != null)
             {
                 enemy.TakeDamage(genericDamage);
@@ -468,14 +471,11 @@ void OnWeaponSwapped()
     IEnumerator ReloadGeneric()
     {
         genericIsReloading = true;
-
         if (genericGunAudioSource != null && genericReloadSound != null)
         {
             genericGunAudioSource.PlayOneShot(genericReloadSound);
         }
-
         yield return new WaitForSeconds(genericReloadTime);
-
         genericCurrentAmmo = genericMaxAmmo;
         genericIsReloading = false;
     }
@@ -490,13 +490,11 @@ void OnWeaponSwapped()
             genericMuzzleFlash.gameObject.SetActive(false);
         }
     }
-    #endregion
 
-    #region Sniper Methods
+    // ============ Sniper (Primary) ============
     void SniperUpdate()
     {
-        if (sniperIsReloading)
-            return;
+        if (sniperIsReloading) return;
 
         if (Input.GetButtonDown("Fire1") && Time.time >= sniperNextTimeToFire)
         {
@@ -511,7 +509,6 @@ void OnWeaponSwapped()
             }
         }
 
-        // Toggle zoom with right mouse button
         if (Input.GetMouseButtonDown(1))
         {
             ToggleSniperZoom();
@@ -539,7 +536,6 @@ void OnWeaponSwapped()
             sniperGunAudioSource.PlayOneShot(sniperGunshotSound);
         }
 
-        // Shell Ejection
         if (sniperShellPrefab != null && sniperShellEjectPoint != null)
         {
             GameObject shell = Instantiate(sniperShellPrefab, sniperShellEjectPoint.position, sniperShellEjectPoint.rotation);
@@ -552,7 +548,6 @@ void OnWeaponSwapped()
             Destroy(shell, 2f);
         }
 
-        // Tracer Effect
         if (sniperTracerPrefab != null && sniperTracerSpawnPoint != null)
         {
             GameObject tracer = Instantiate(sniperTracerPrefab, sniperTracerSpawnPoint.position, sniperTracerSpawnPoint.rotation);
@@ -564,13 +559,11 @@ void OnWeaponSwapped()
             Destroy(tracer, 0.5f);
         }
 
-        // Raycast for bullet hit
         RaycastHit hit;
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, sniperRange))
         {
-            EnemyHealth enemy = hit.transform.GetComponent<EnemyHealth>();
-            if (enemy == null)
-                enemy = hit.transform.GetComponentInParent<EnemyHealth>();
+            EnemyHealth enemy = hit.transform.GetComponent<EnemyHealth>() ??
+                                hit.transform.GetComponentInParent<EnemyHealth>();
             if (enemy != null)
             {
                 enemy.TakeDamage(sniperDamage);
@@ -588,14 +581,11 @@ void OnWeaponSwapped()
     IEnumerator ReloadSniper()
     {
         sniperIsReloading = true;
-
         if (sniperGunAudioSource != null && sniperReloadSound != null)
         {
             sniperGunAudioSource.PlayOneShot(sniperReloadSound);
         }
-
         yield return new WaitForSeconds(sniperReloadTime);
-
         sniperCurrentAmmo = sniperMaxAmmo;
         sniperIsReloading = false;
     }
@@ -620,14 +610,12 @@ void OnWeaponSwapped()
         if (scopeOverlay != null)
             scopeOverlay.SetActive(sniperIsZoomed);
 
-        // Toggle sniper model visibility (hide the model when zoomed in)
+        // Show/hide the sniper model if you want it invisible while scoped
         if (sniperModel != null)
         {
-            Renderer[] renderers = sniperModel.GetComponentsInChildren<Renderer>();
-            foreach (Renderer rend in renderers)
-            {
-                rend.enabled = !sniperIsZoomed;
-            }
+            // We'll skip the snippet about toggling the sniper model,
+            // since we're now controlling all weapon models in UpdateWeaponVisibility.
+            // But you can still hide the sniper model while zoomed, if desired.
         }
     }
 
@@ -642,13 +630,11 @@ void OnWeaponSwapped()
         }
         playerCamera.fieldOfView = endFOV;
     }
-    #endregion
 
-    #region RPG7 Methods
+    // ============ RPG7 (Primary) ============
     void RPG7Update()
     {
-        if (rpgIsReloading)
-            return;
+        if (rpgIsReloading) return;
 
         if (Input.GetButtonDown("Fire1") && rpgIsLoaded)
         {
@@ -663,7 +649,6 @@ void OnWeaponSwapped()
 
     void FireRPG7()
     {
-        // Mark as fired
         rpgIsLoaded = false;
         if (rocketInGun != null)
             rocketInGun.SetActive(false);
@@ -699,15 +684,18 @@ void OnWeaponSwapped()
         Collider[] colliders = Physics.OverlapSphere(explosionPosition, explosionRadius);
         foreach (Collider col in colliders)
         {
-            EnemyHealth enemy = col.GetComponent<EnemyHealth>();
-            if (enemy == null)
-                enemy = col.GetComponentInParent<EnemyHealth>();
+            EnemyHealth enemy = col.GetComponent<EnemyHealth>() ??
+                                col.GetComponentInParent<EnemyHealth>();
             if (enemy != null)
+            {
                 enemy.TakeDamage(explosionDamage);
+            }
 
             Rigidbody rb = col.GetComponent<Rigidbody>();
             if (rb != null)
+            {
                 rb.AddExplosionForce(500f, explosionPosition, explosionRadius);
+            }
         }
 
         yield return ReloadRPG7();
@@ -727,5 +715,4 @@ void OnWeaponSwapped()
         rpgIsLoaded = true;
         rpgIsReloading = false;
     }
-    #endregion
 }

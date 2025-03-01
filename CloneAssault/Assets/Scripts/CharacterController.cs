@@ -113,10 +113,12 @@ public class PlayerMovements : MonoBehaviour
         cameraTransform.localPosition = new Vector3(cameraTransform.localPosition.x, newCamY, cameraTransform.localPosition.z);
 
         // Sliding
-        if (Input.GetKeyDown(KeyCode.LeftControl) && isGrounded && !isSliding)
-        {
-            StartCoroutine(Slide());
-        }
+// Instead of using LeftControl, try using a different key, e.g., LeftShift:
+if (Input.GetKeyDown(KeyCode.LeftShift) && isGrounded && !isSliding)
+{
+    StartCoroutine(Slide());
+}
+
 
         // Apply gravity
         velocity.y += gravity * Time.deltaTime;

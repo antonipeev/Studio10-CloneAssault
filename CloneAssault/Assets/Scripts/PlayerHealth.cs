@@ -30,27 +30,46 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
-    void Die()
+void Die()
+{
+    Debug.Log("Player has died!");
+
+    // Disable the pause menu entirely
+    PauseMenu.DisablePauseMenu = true;
+
+    // If you want to display a game over screen:
+    if (gameOverUI != null)
     {
-        Debug.Log("Player has died!");
-
-        // Display the Game Over UI
-        if (gameOverUI != null)
-        {
-            gameOverUI.SetActive(true);
-        }
-
-        // Disable the crosshair so it doesn't appear over the game over screen
-        if (crosshairCanvas != null)
-        {
-            crosshairCanvas.SetActive(false);
-        }
-
-        // Freeze the game
-        Time.timeScale = 0f;
-
-        // Unlock and show the cursor for menu navigation
-        Cursor.visible = true;
-        Cursor.lockState = CursorLockMode.None;
+        gameOverUI.SetActive(true);
     }
+
+    // Disable crosshair
+    if (crosshairCanvas != null)
+    {
+        crosshairCanvas.SetActive(false);
+    }
+
+    // Freeze game
+    Time.timeScale = 0f;
+
+    // Unlock/show the cursor
+    Cursor.visible = true;
+    Cursor.lockState = CursorLockMode.None;
+
+    // Disable all other player controls (e.g., Weapons, Movement)
+    // ...
+}
+
+void DisableAllInputsExceptLeftClick()
+{
+    // Disable all keys except left mouse button
+    foreach (KeyCode key in System.Enum.GetValues(typeof(KeyCode)))
+    {
+        if (key != KeyCode.Mouse0) // Left Click
+        {
+            Input.ResetInputAxes();
+        }
+    }
+}
+
 }
