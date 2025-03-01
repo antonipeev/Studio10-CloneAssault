@@ -13,17 +13,19 @@ CURRENT FEATURES
 - Enemy AI + Path logic
 - Music + Basic Sounds
 
+NEWLY ADDED (2/28/2025):
+- Integrate all weapon classes
+- Primary / Secondary weapons switching
+- Ammo + Health UI
+
 TODO:
 - Add throwables
 - Add more miscellaneous sounds
 - Add enemy + player models
 - Inventory System
-- Primary / Secondary weapons switching
 - Visual Damage Feedback
-- Integrate all weapon classes
 - Recoil
 - Save / Load System
-- UI
 - Objective Tracker
 - Ammo and Health pickups + drops
 - Level Design + Add envrionmental hazards
@@ -31,7 +33,6 @@ TODO:
 
 
 Assets Used:
-
 
 Sci-Fi Construction Kit (Modular)
 https://assetstore.unity.com/packages/3d/environments/sci-fi/sci-fi-construction-kit-modular-159280
