@@ -12,6 +12,7 @@ public class PlayerHealth : MonoBehaviour
     [Header("Game Over Settings")]
     public GameObject gameOverUI;      // Assign your Game Over Canvas in the Inspector
     public GameObject crosshairCanvas; // Reference to your crosshair canvas
+    public float CurrentHealth { get { return currentHealth; } }
 
     void Start()
     {
